@@ -62,6 +62,8 @@ Le bronze n'est jamais modifié : le nettoyage est appliqué lors de la créatio
 
 Résultat : 510 195 lignes en bronze → 510 194 lignes en silver (1 ligne retirée).
 
+Encodage : 2 libellés de fonction (« 2ème » et « 8ème adjoint ») ont été corrompus à l'import (« è » → « �� »). Le fichier source est sain : le bronze conserve la valeur brute, la correction est appliquée dans le silver et le gold.
+
 ## 6. Schéma en étoile (gold)
 
 ```
