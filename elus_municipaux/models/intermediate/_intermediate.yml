@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: int_elus_enrichis
+    description: "Staging enrichi : âge au début du mandat (NULL si date de naissance aberrante) et indicateur est_maire."
+    columns:
+      - name: id_elu
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_silver__conseillers_municipaux')
+              field: id_elu

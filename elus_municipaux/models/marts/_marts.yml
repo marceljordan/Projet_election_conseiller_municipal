@@ -1,0 +1,58 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: "Dimension date (année 2026)."
+    columns:
+      - name: date_key
+        tests: [unique, not_null]
+  - name: dim_elu
+    description: "Un élu par ligne."
+    columns:
+      - name: elu_key
+        tests: [unique, not_null]
+      - name: code_sexe
+        tests:
+          - accepted_values:
+              values: ['M', 'F']
+  - name: dim_commune
+    description: "Une commune par ligne, avec son département."
+    columns:
+      - name: commune_key
+        tests: [unique, not_null]
+  - name: dim_fonction
+    description: "Une fonction (Maire, Adjoint, Conseiller municipal...) par ligne."
+    columns:
+      - name: fonction_key
+        tests: [unique, not_null]
+  - name: dim_cat_socio_prof
+    description: "Une catégorie socio-professionnelle par ligne ('NR' = non renseignée)."
+    columns:
+      - name: csp_key
+        tests: [unique, not_null]
+  - name: fct_mandat_fonction
+    description: >
+      Grain : une ligne = un élu, dans une commune, pour une fonction.
+      Mesure : age_debut_mandat.
+    columns:
+      - name: mandat_key
+        tests: [unique, not_null]
+      - name: elu_key
+        tests:
+          - not_null
+          - relationships: {to: ref('dim_elu'), field: elu_key}
+      - name: commune_key
+        tests:
+          - not_null
+          - relationships: {to: ref('dim_commune'), field: commune_key}
+      - name: fonction_key
+        tests:
+          - not_null
+          - relationships: {to: ref('dim_fonction'), field: fonction_key}
+      - name: csp_key
+        tests:
+          - not_null
+          - relationships: {to: ref('dim_cat_socio_prof'), field: csp_key}
+      - name: date_debut_mandat_key
+        tests:
+          - relationships: {to: ref('dim_date'), field: date_key}

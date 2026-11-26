@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: silver
+    schema: silver
+    description: "Données nettoyées des conseillers municipaux élus en mars 2026 (RNE)"
+    tables:
+      - name: conseillers_municipaux
+        description: "Une ligne par élu (et fonction) après nettoyage"
+        columns:
+          - name: id_elu
+            description: "Identifiant haché de l'élu"
+            tests:
+              - not_null

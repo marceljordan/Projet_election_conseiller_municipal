@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_silver__conseillers_municipaux
+    description: "Une ligne par élu et fonction, nettoyée et typée (couche staging)."
+    columns:
+      - name: id_elu
+        tests:
+          - not_null
+      - name: code_sexe
+        tests:
+          - accepted_values:
+              values: ['M', 'F']
+      - name: code_commune
+        tests:
+          - not_null
+      - name: code_departement
+        tests:
+          - not_null
+      - name: libelle_fonction
+        tests:
+          - not_null
