@@ -98,33 +98,67 @@ Schéma relationnel : `docs/schema_relationnel.png`
 | Volume | 510 195 lignes source, passage à environ 10 M lignes prévu (jalon 2) |
 | Licence | Licence Ouverte / Open Licence 2.0 |
 
-## 8. Arborescence du dépôt
+## 8. Industrialisation avec dbt
+
+Le pipeline silver → gold est aussi réécrit avec **dbt** (dossier [`dbt/`](dbt/)), pour le rendre reproductible, testé et documenté.
+
+```
+bronze.conseillers_municipaux   (source CSV brute)
+        │
+        ▼
+stg_conseillers_municipaux       silver · vue   — renommage, trim, vides → NULL, typage des dates
+        │
+        ▼
+int_conseillers_municipaux_territoire   silver · table — département déduit, territoire unifié, dédoublonnage
+        │
+        ▼
+dim_elu · dim_commune · dim_fonction · dim_cat_socio_prof · dim_date
+                    └──────► fact_mandat_fonction          gold · tables
+```
+
+- Clés de substitution générées par `dbt_utils.generate_surrogate_key`
+- Tests automatiques : clés uniques et non nulles, valeurs acceptées, intégrité référentielle fait → dimensions, unicité du grain de la table de faits
+- Détails, installation et commandes : [`dbt/README.md`](dbt/README.md)
+
+## 9. Arborescence du dépôt
 
 ```
 Projet_election_conseiller_municipal/
 ├── README.md
-├── sql/
-│   ├── SilverCreation.sql      nettoyage et création du silver
-│   ├── SilverControle.sql      contrôles qualité du silver
-│   └── Nettoyage_slicer.sql    diagnostic qualité du bronze
+├── sql/                              scripts SQL manuels (DBeaver)
+│   ├── Nettoyage_slicer.sql          diagnostic qualité du bronze
+│   ├── SilverCreation.sql            nettoyage et création du silver
+│   ├── SilverControle.sql            contrôles qualité du silver
+│   ├── etoile.sql                    alimentation du modèle en étoile (gold)
+│   ├── correction_liaison_gold.sql   correction des clés étrangères vers dim_date
+│   └── 02_requetes_avancees.sql      requêtes avancées (classement, LAG, NTILE, fenêtres, CTE récursive)
+├── dbt/                              pipeline silver → gold industrialisé avec dbt
+│   ├── dbt_project.yml
+│   ├── packages.yml                  dépendance dbt_utils
+│   ├── macros/                       generate_schema_name (schémas silver / gold sans préfixe)
+│   └── models/
+│       ├── staging/                  stg_conseillers_municipaux + déclaration de la source
+│       ├── intermediate/             int_conseillers_municipaux_territoire
+│       └── marts/                    dimensions et table de faits
 └── docs/
-    └── schema_relationnel.png  (à ajouter)
+    └── schema_relationnel.png        (à ajouter)
 ```
 
-## 9. Avancement
+## 10. Avancement
 
 - [x] Choix du sujet et du jeu de données
 - [x] Import des données brutes (bronze)
 - [x] Nettoyage, dédoublonnage et contrôles (silver)
 - [x] Modèle en étoile (gold)
+- [x] Requêtes SQL avancées : classement, LAG/LEAD, NTILE, fenêtre glissante, CTE récursive, CTE enchaînées (`02_requetes_avancees.sql`)
+- [x] Installation de dbt et modélisation staging → intermediate → marts, avec tests
 - [ ] Génération du volume à environ 10 M lignes (`01_generation_volume.sql`)
-- [ ] Requêtes SQL avancées : classement, LAG/LEAD, NTILE, fenêtre glissante, CTE récursive, CTE enchaînées (`02_requetes_avancees.sql`)
 - [ ] Index et benchmark avant / après (`03_index.sql`, `docs/rapport_performance.md`)
 - [ ] Tableau de bord Power BI
-- [ ] Installation de dbt
 
-## 10. Difficultés rencontrées
+## 11. Difficultés rencontrées
 
 - **Types devinés à l'import** : DBeaver a typé certaines colonnes en numérique (erreur `btrim(bigint)`), d'où la conversion explicite en texte avant nettoyage.
 - **Faux doublons** : la plupart des identités répétées sont des cumuls de fonctions légitimes, pas des erreurs.
 - **Valeurs aberrantes** : dates de naissance par défaut ou mal saisies, neutralisées plutôt que supprimées.
+- **Pas d'identifiant d'élu** : la source ne fournit aucun identifiant ; l'élu est identifié par nom + prénom + date de naissance + sexe, ce qui fusionne les homonymes parfaits (limite documentée dans `dim_elu`).
