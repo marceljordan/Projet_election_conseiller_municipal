@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_conseillers_municipaux
+    description: Conseillers municipaux, 1 ligne = 1 élu dans 1 commune (grain de la source)
+    columns:
+      - name: code_commune
+        tests: [not_null]
+      - name: nom_elu
+        tests: [not_null]
+      - name: prenom_elu
+        tests: [not_null]
+      - name: code_sexe
+        tests:
+          - accepted_values:
+              values: ['M', 'F']
+      - name: date_naissance
+        tests: [not_null]
+      - name: code_categorie_socio_pro
+        tests: [not_null]
+      - name: date_debut_mandat
+        tests: [not_null]

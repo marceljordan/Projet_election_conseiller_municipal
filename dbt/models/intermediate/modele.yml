@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: int_conseillers_municipaux_territoire
+    description: Conseillers municipaux avec territoire corrigé et unifié (grain inchangé, 1 ligne = 1 élu dans 1 commune)
+    columns:
+      - name: code_departement
+        description: Département, déduit du code commune si absent hors territoire spécial
+        tests:
+          - not_null:
+              config:
+                where: "code_collectivite_sp is null"
+      - name: libelle_departement
+        tests:
+          - not_null:
+              config:
+                where: "code_collectivite_sp is null"
+      - name: code_territoire
+        description: Département, sinon collectivité à statut particulier
+        tests: [not_null]
+      - name: libelle_territoire
+        tests: [not_null]
+      - name: est_departement_deduit
+        description: true si le département a été déduit du code commune (RM 1)
+        tests: [not_null]

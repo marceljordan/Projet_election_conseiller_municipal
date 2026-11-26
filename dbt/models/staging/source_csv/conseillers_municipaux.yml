@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: data_gouv
+    schema: bronze
+    tables:
+      - name: conseillers_municipaux
+        description: CSV brut chargé tel quel

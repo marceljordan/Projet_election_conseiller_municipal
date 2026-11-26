@@ -1,0 +1,74 @@
+version: 2
+
+models:
+  - name: dim_fonction
+    columns:
+      - name: fonction_sk
+        tests: [unique, not_null]
+
+  - name: dim_cat_socio_prof
+    columns:
+      - name: cat_socio_prof_sk
+        tests: [unique, not_null]
+
+  - name: dim_commune
+    columns:
+      - name: commune_sk
+        tests: [unique, not_null]
+
+  - name: dim_elu
+    description: >
+      Élus. Limite de la source : aucun identifiant fourni, clé naturelle = nom + prénom
+      + date de naissance + sexe. Deux homonymes parfaits sont fusionnés.
+    columns:
+      - name: elu_sk
+        tests: [unique, not_null]
+
+  - name: dim_date
+    columns:
+      - name: date_sk
+        tests: [unique, not_null]
+
+  - name: fact_mandat_fonction
+    description: 1 ligne = 1 élu × 1 commune × 1 fonction. Fait sans mesure (on compte les lignes).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [elu_sk, commune_sk, fonction_sk]
+    columns:
+      - name: elu_sk
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_elu')
+                field: elu_sk
+      - name: commune_sk
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_commune')
+                field: commune_sk
+      - name: cat_socio_prof_sk
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_cat_socio_prof')
+                field: cat_socio_prof_sk
+      - name: fonction_sk
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_fonction')
+                field: fonction_sk
+      - name: date_debut_mandat_sk
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_sk
+      - name: date_debut_fonction_sk
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_sk
